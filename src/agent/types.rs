@@ -38,6 +38,7 @@ impl fmt::Display for AgentType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum AgentStatus {
     Disconnected,
     Connecting,
@@ -54,6 +55,7 @@ pub struct AgentConfig {
 }
 
 #[async_trait::async_trait]
+#[allow(dead_code)]
 pub trait Agent: Send + Sync {
     async fn send_message(&self, msg: String) -> Result<()>;
     fn get_status(&self) -> AgentStatus;

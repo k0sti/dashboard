@@ -5,9 +5,11 @@ use anyhow::Result;
 use rusqlite::{Connection, params};
 
 pub struct ChatHistoryStore {
+    #[allow(dead_code)]
     conn: Connection,
 }
 
+#[allow(dead_code)]
 impl ChatHistoryStore {
     pub fn new() -> Result<Self> {
         let db_path = AppConfig::config_dir()?.join("chat_history.db");

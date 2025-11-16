@@ -6,6 +6,7 @@ A desktop GUI application for managing and interacting with multiple autonomous 
 
 - **Multi-Agent Management**: Configure and connect to multiple AI agents simultaneously
 - **Unified Chat Interface**: Single chat view showing all agent conversations with message routing
+- **Text-to-Speech**: Convert agent messages to speech with configurable voices and playback speed (V1: stub implementation)
 - **Ollama Integration**: First-class support for Ollama LLM agents
 - **Shell Toolcalls**: Agents can execute shell commands with safety timeouts
 - **Planning Interface**: Track agent task plans and execution progress
@@ -51,7 +52,19 @@ cargo run --release
 - **Broadcast to all**: Click "📢 Broadcast" and messages will be sent to all active agents
 - **Press Enter to send** (Shift+Enter for new line in message)
 
-### 4. View Plans
+### 4. Use Text-to-Speech
+
+1. Click the "TTS" button to open the TTS settings panel
+2. Enable TTS with the checkbox
+3. Configure:
+   - Auto-speak: Automatically speak new agent messages
+   - Playback speed: Adjust from 0.5x to 2.0x
+   - Voice model: Select or enter voice model name
+4. Click the 🔊 button on any message to speak it
+
+**Note**: V1 uses a stub implementation that logs TTS requests without actual audio output. Future versions will integrate Candle + Piper TTS for real speech synthesis.
+
+### 5. View Plans
 
 1. Click the "Plans" button to show the plans panel
 2. View agent task plans and their progress
@@ -67,6 +80,13 @@ src/
 ├── config/          # Configuration management
 ├── plan/            # Planning data structures
 ├── storage/         # Persistent storage (SQLite)
+├── tts/             # Text-to-Speech system
+│   ├── config.rs    # TTS configuration
+│   ├── model.rs     # Piper model loading (stub)
+│   ├── synthesis.rs # Text preprocessing and synthesis
+│   ├── playback.rs  # Audio playback (stub)
+│   ├── queue.rs     # TTS request queue
+│   └── service.rs   # TTS service facade
 ├── toolcall/        # Toolcall system
 │   ├── types.rs     # Toolcall interface
 │   └── shell.rs     # Shell command execution
@@ -84,6 +104,15 @@ Agent configurations are stored in:
 - Windows: `%APPDATA%\agent-dashboard\agents.json`
 
 Chat history is stored in SQLite database at the same location.
+
+### TTS Voice Models (Future)
+
+When real Piper TTS is integrated, voice models will be stored in:
+- Linux: `~/.config/agent-dashboard/tts/models/`
+- macOS: `~/Library/Application Support/agent-dashboard/tts/models/`
+- Windows: `%APPDATA%\agent-dashboard\tts\models\`
+
+Place `.onnx` and `.json` model files in this directory.
 
 ## Development
 

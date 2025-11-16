@@ -18,6 +18,7 @@ impl Default for PlanId {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub enum PlanStepStatus {
     Pending,
     InProgress,
@@ -26,12 +27,14 @@ pub enum PlanStepStatus {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct PlanStep {
     pub description: String,
     pub status: PlanStepStatus,
     pub sub_steps: Vec<PlanStep>,
 }
 
+#[allow(dead_code)]
 impl PlanStep {
     pub fn new(description: String) -> Self {
         Self {
@@ -51,6 +54,7 @@ pub struct Plan {
     pub steps: Vec<PlanStep>,
 }
 
+#[allow(dead_code)]
 impl Plan {
     pub fn new(agent_id: AgentId, title: String, description: String) -> Self {
         Self {

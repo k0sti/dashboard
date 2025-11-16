@@ -3,6 +3,7 @@ mod config;
 mod plan;
 mod storage;
 mod toolcall;
+mod tts;
 mod ui;
 
 use anyhow::Result;

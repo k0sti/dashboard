@@ -4,6 +4,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct ToolcallSchema {
     pub name: String,
     pub description: String,
@@ -11,12 +12,14 @@ pub struct ToolcallSchema {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct ToolcallRequest {
     pub name: String,
     pub parameters: Value,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct ToolcallResult {
     pub success: bool,
     pub output: String,
@@ -24,15 +27,18 @@ pub struct ToolcallResult {
 }
 
 #[async_trait::async_trait]
+#[allow(dead_code)]
 pub trait Toolcall: Send + Sync {
     fn get_schema(&self) -> ToolcallSchema;
     async fn execute(&self, parameters: Value) -> Result<ToolcallResult>;
 }
 
+#[allow(dead_code)]
 pub struct ToolcallRegistry {
     tools: HashMap<String, Box<dyn Toolcall>>,
 }
 
+#[allow(dead_code)]
 impl ToolcallRegistry {
     pub fn new() -> Self {
         Self {

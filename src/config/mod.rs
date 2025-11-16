@@ -1,12 +1,24 @@
 use crate::agent::AgentConfig;
+use crate::tts::TTSConfig;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
     pub agents: Vec<AgentConfig>,
+    #[serde(default)]
+    pub tts: TTSConfig,
+}
+
+impl Default for AppConfig {
+    fn default() -> Self {
+        Self {
+            agents: Vec::new(),
+            tts: TTSConfig::default(),
+        }
+    }
 }
 
 impl AppConfig {

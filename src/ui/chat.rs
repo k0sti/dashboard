@@ -77,6 +77,7 @@ impl ChatMessage {
         }
     }
 
+    #[allow(dead_code)]
     pub fn new_agent_message(agent_id: AgentId, content: String) -> Self {
         Self {
             id: MessageId::new(),
@@ -89,7 +90,11 @@ impl ChatMessage {
     }
 }
 
-pub fn render_chat_messages(ui: &mut egui::Ui, messages: &[ChatMessage]) {
+pub fn render_chat_messages(
+    ui: &mut egui::Ui,
+    messages: &[ChatMessage],
+    on_speak: &mut Option<MessageId>,
+) {
     for message in messages {
         ui.group(|ui| {
             ui.horizontal(|ui| {
@@ -132,6 +137,13 @@ pub fn render_chat_messages(ui: &mut egui::Ui, messages: &[ChatMessage]) {
                         );
                     }
                 }
+
+                // Add TTS speak button
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if ui.small_button("🔊").on_hover_text("Speak this message").clicked() {
+                        *on_speak = Some(message.id);
+                    }
+                });
             });
 
             if message.metadata.is_error {

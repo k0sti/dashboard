@@ -1,8 +1,9 @@
-use crate::agent::{AgentConfig, AgentId};
+use crate::agent::AgentId;
 use crate::config::AppConfig;
 use crate::plan::Plan;
 use crate::storage::ChatHistoryStore;
-use crate::ui::chat::ChatMessage;
+use crate::tts::{TTSConfig, TTSService, TTSRequest};
+use crate::ui::chat::{ChatMessage, MessageId};
 use std::collections::HashMap;
 
 pub struct DashboardApp {
@@ -14,14 +15,27 @@ pub struct DashboardApp {
     pub chat_input: String,
     pub show_config_panel: bool,
     pub show_plan_panel: bool,
+    pub show_tts_panel: bool,
     pub plans: Vec<Plan>,
+    #[allow(dead_code)]
     pub chat_history_store: Option<ChatHistoryStore>,
+    pub tts_config: TTSConfig,
+    pub tts_service: Option<TTSService>,
+    pub speak_message_id: Option<MessageId>,
 }
 
 impl DashboardApp {
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         let config = AppConfig::load().unwrap_or_default();
         let chat_history_store = ChatHistoryStore::new().ok();
+
+        // Initialize TTS from saved config
+        let tts_config = config.tts.clone();
+        let tts_service = if tts_config.enabled {
+            TTSService::start(tts_config.clone()).ok()
+        } else {
+            None
+        };
 
         Self {
             config,
@@ -32,8 +46,19 @@ impl DashboardApp {
             chat_input: String::new(),
             show_config_panel: false,
             show_plan_panel: false,
+            show_tts_panel: false,
             plans: Vec::new(),
             chat_history_store,
+            tts_config,
+            tts_service,
+            speak_message_id: None,
+        }
+    }
+
+    pub fn save_tts_config(&mut self) {
+        self.config.tts = self.tts_config.clone();
+        if let Err(e) = self.config.save() {
+            log::error!("Failed to save TTS config: {}", e);
         }
     }
 
@@ -69,6 +94,10 @@ impl eframe::App for DashboardApp {
 
                 if ui.button("Plans").clicked() {
                     self.show_plan_panel = !self.show_plan_panel;
+                }
+
+                if ui.button("TTS").clicked() {
+                    self.show_tts_panel = !self.show_tts_panel;
                 }
             });
         });
@@ -135,6 +164,81 @@ impl eframe::App for DashboardApp {
                 });
         }
 
+        if self.show_tts_panel {
+            egui::SidePanel::right("tts_panel")
+                .resizable(true)
+                .default_width(300.0)
+                .show(ctx, |ui| {
+                    ui.heading("Text-to-Speech");
+                    ui.separator();
+
+                    ui.checkbox(&mut self.tts_config.enabled, "Enable TTS");
+
+                    if self.tts_config.enabled {
+                        ui.checkbox(&mut self.tts_config.auto_speak, "Auto-speak agent messages");
+
+                        ui.separator();
+
+                        ui.label("Playback Speed:");
+                        ui.add(egui::Slider::new(&mut self.tts_config.playback_speed, 0.5..=2.0));
+
+                        ui.separator();
+
+                        ui.label("Voice Model:");
+                        ui.text_edit_singleline(&mut self.tts_config.selected_voice);
+
+                        ui.separator();
+
+                        if ui.button("Apply Settings").clicked() {
+                            self.tts_config.validate();
+                            // Save config
+                            self.save_tts_config();
+                            // Restart TTS service with new config
+                            if let Ok(service) = TTSService::start(self.tts_config.clone()) {
+                                self.tts_service = Some(service);
+                            }
+                        }
+
+                        if let Some(ref service) = self.tts_service {
+                            ui.separator();
+                            ui.label("TTS Service: Running");
+
+                            if ui.button("Stop Playback").clicked() {
+                                let service = service.clone();
+                                tokio::spawn(async move {
+                                    let _ = service.stop().await;
+                                });
+                            }
+
+                            if ui.button("Clear Queue").clicked() {
+                                let service = service.clone();
+                                tokio::spawn(async move {
+                                    let _ = service.clear_queue().await;
+                                });
+                            }
+                        } else {
+                            ui.separator();
+                            ui.label("TTS Service: Stopped");
+                        }
+                    } else {
+                        if let Some(ref service) = self.tts_service {
+                            let service_clone = service.clone();
+                            tokio::spawn(async move {
+                                let _ = service_clone.shutdown().await;
+                            });
+                            self.tts_service = None;
+                        }
+                    }
+
+                    ui.separator();
+                    ui.label("Model Directory:");
+                    ui.label(self.tts_config.model_directory.display().to_string());
+
+                    ui.separator();
+                    ui.label("Note: Place Piper voice models (.onnx + .json) in the model directory.");
+                });
+        }
+
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical(|ui| {
                 let available_height = ui.available_height();
@@ -144,8 +248,27 @@ impl eframe::App for DashboardApp {
                     .stick_to_bottom(true)
                     .max_height(available_height - 80.0)
                     .show(ui, |ui| {
-                        super::chat::render_chat_messages(ui, &self.chat_messages);
+                        super::chat::render_chat_messages(ui, &self.chat_messages, &mut self.speak_message_id);
                     });
+
+                // Handle speak requests
+                if let Some(msg_id) = self.speak_message_id.take() {
+                    if let Some(message) = self.chat_messages.iter().find(|m| m.id == msg_id) {
+                        if let Some(ref service) = self.tts_service {
+                            let request = TTSRequest::new(
+                                message.content.clone(),
+                                self.tts_config.selected_voice.clone(),
+                                self.tts_config.playback_speed,
+                            );
+                            let service = service.clone();
+                            tokio::spawn(async move {
+                                if let Err(e) = service.speak(request).await {
+                                    log::error!("TTS speak error: {}", e);
+                                }
+                            });
+                        }
+                    }
+                }
 
                 ui.separator();
 

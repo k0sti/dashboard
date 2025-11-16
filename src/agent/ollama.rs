@@ -5,11 +5,13 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct OllamaConfig {
     pub host: String,
     pub model: String,
 }
 
+#[allow(dead_code)]
 pub struct OllamaAgent {
     config: AgentConfig,
     ollama_config: OllamaConfig,
@@ -19,12 +21,14 @@ pub struct OllamaAgent {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 struct OllamaMessage {
     role: String,
     content: String,
 }
 
 #[derive(Debug, Serialize)]
+#[allow(dead_code)]
 struct OllamaChatRequest {
     model: String,
     messages: Vec<OllamaMessage>,
@@ -32,11 +36,13 @@ struct OllamaChatRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct OllamaChatResponse {
     message: OllamaMessage,
     done: bool,
 }
 
+#[allow(dead_code)]
 impl OllamaAgent {
     pub fn new(config: AgentConfig) -> Result<Self> {
         let ollama_config: OllamaConfig = serde_json::from_value(config.config_data.clone())?;

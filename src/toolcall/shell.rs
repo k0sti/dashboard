@@ -4,10 +4,12 @@ use serde_json::Value;
 use std::process::Command;
 use std::time::Duration;
 
+#[allow(dead_code)]
 pub struct ShellToolcall {
     timeout: Duration,
 }
 
+#[allow(dead_code)]
 impl ShellToolcall {
     pub fn new() -> Self {
         Self {

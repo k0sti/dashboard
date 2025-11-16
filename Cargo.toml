@@ -18,3 +18,8 @@ rusqlite = { version = "0.32", features = ["bundled"] }
 log = "0.4"
 env_logger = "0.11"
 async-trait = "0.1"
+
+# TTS dependencies
+# Note: This is a minimal stub implementation for demonstration
+# Real implementation would use Candle + Piper TTS + rodio/cpal for audio
+# For now, using simple test tone generation to avoid platform-specific audio issues
