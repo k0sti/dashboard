@@ -19,7 +19,11 @@ log = "0.4"
 env_logger = "0.11"
 async-trait = "0.1"
 
-# TTS dependencies
-# Note: This is a minimal stub implementation for demonstration
-# Real implementation would use Candle + Piper TTS + rodio/cpal for audio
-# For now, using simple test tone generation to avoid platform-specific audio issues
+# TTS dependencies (optional for now due to platform-specific audio dependencies)
+piper-rs = { version = "0.1", optional = true }  # Piper TTS ONNX models
+rodio = { version = "0.21", optional = true, default-features = false }  # Audio playback
+hound = "3.5"  # WAV file handling for audio samples
+
+[features]
+default = []
+tts = ["piper-rs", "rodio"]

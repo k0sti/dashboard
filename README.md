@@ -62,7 +62,14 @@ cargo run --release
    - Voice model: Select or enter voice model name
 4. Click the 🔊 button on any message to speak it
 
-**Note**: V1 uses a stub implementation that logs TTS requests without actual audio output. Future versions will integrate Candle + Piper TTS for real speech synthesis.
+**TTS Implementation**: The system generates audio using tone-based synthesis where each word is represented by a tone that varies in frequency and duration based on text characteristics. Audio is saved as WAV files in `~/.config/agent-dashboard/tts/audio/` for playback.
+
+**Voice Models**: Different voice IDs affect the base pitch:
+- IDs containing "low" → Lower pitch (~180Hz)
+- IDs containing "high" → Higher pitch (~260Hz)
+- Default → Medium pitch (~220Hz)
+
+**Future Enhancement**: Optional Piper TTS integration will be available via the `tts` feature flag for neural TTS synthesis.
 
 ### 5. View Plans
 
@@ -82,9 +89,9 @@ src/
 ├── storage/         # Persistent storage (SQLite)
 ├── tts/             # Text-to-Speech system
 │   ├── config.rs    # TTS configuration
-│   ├── model.rs     # Piper model loading (stub)
-│   ├── synthesis.rs # Text preprocessing and synthesis
-│   ├── playback.rs  # Audio playback (stub)
+│   ├── model.rs     # Voice model management & synthesis
+│   ├── synthesis.rs # Text preprocessing
+│   ├── playback.rs  # WAV file generation & playback
 │   ├── queue.rs     # TTS request queue
 │   └── service.rs   # TTS service facade
 ├── toolcall/        # Toolcall system
