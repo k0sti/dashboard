@@ -35,13 +35,16 @@
 - Configuration management (get/set/list)
 - Session deletion (logout)
 
-## Not Yet Implemented ❌
-
 ### Get Command
-- Fetch messages from specific chat
-- Time-based filtering (since, before)
-- Sender filtering
-- Message content type detection
+- Fetch messages from specific chat using `client.iter_messages(peer)`
+- Time-based filtering (since, before, after)
+- Sender filtering by name
+- Message content type detection (text, media)
+- Multiple output formats (text, JSON, CSV, compact)
+- File output support
+- Proper message conversion with sender info, timestamps, replies
+
+## Not Yet Implemented ❌
 
 ### Watch Command
 - Real-time message monitoring using updates API
@@ -98,7 +101,7 @@ Implementation based on grammers-client v0.8.1 examples:
 | info    | ✅ Complete | Show chat details by name/ID |
 | config  | ✅ Complete | Config get/set/list |
 | logout  | ✅ Complete | Session deletion |
-| get     | ❌ Not started | Fetch messages from chat |
+| get     | ✅ Complete | Fetch messages with time/sender filters |
 | watch   | ❌ Not started | Real-time message monitoring |
 | export  | ❌ Not started | Export messages to file |
 | search  | ❌ Not started | Search messages by text |
@@ -112,9 +115,9 @@ Implementation based on grammers-client v0.8.1 examples:
 
 ## Next Steps
 
-1. Implement `get` command using `client.iter_messages(peer)`
+1. ✅ ~~Implement `get` command using `client.iter_messages(peer)`~~ - DONE
 2. Implement `watch` command using client updates stream
 3. Implement `export` and `search` commands
-4. Add message filtering capabilities
+4. Add additional message filtering capabilities (message type)
 5. Write integration tests with real Telegram connection
 6. Add comprehensive error messages
