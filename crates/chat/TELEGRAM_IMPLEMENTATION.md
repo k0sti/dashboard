@@ -54,15 +54,27 @@
 - Text and JSON output formats
 - Shows sender name, timestamp, and message text
 
-## Not Yet Implemented ❌
-
 ### Export Command
-- Export messages to file
-- Multiple format support
+- Export messages to file with required output path
+- Time-based filtering (since, before)
+- Limit parameter for message count control
+- Multiple output formats (text, JSON, CSV, compact)
+- Progress indicator every 100 messages
+- Chat lookup by ID or name (partial matching)
+- Shows chat name and ID being exported
 
 ### Search Command
-- Search messages by text content
-- Cross-chat search
+- Search messages by text content with case-sensitivity control
+- Search specific chat by name or ID
+- Search across all chats with --all flag
+- Case-insensitive search option (--ignore-case)
+- Limits search to last 1000 messages per chat
+- Multiple output formats (text, JSON, CSV, compact)
+- Shows total found messages and chats searched
+
+## Not Yet Implemented ❌
+
+None! All core commands are complete.
 
 ## Technical Notes
 
@@ -120,8 +132,8 @@ Implementation based on grammers-client v0.8.1 examples:
 | logout  | ✅ Complete | Session deletion |
 | get     | ✅ Complete | Fetch messages with time/sender filters |
 | watch   | ✅ Complete | Real-time message monitoring with Ctrl+C |
-| export  | ❌ Not started | Export messages to file |
-| search  | ❌ Not started | Search messages by text |
+| export  | ✅ Complete | Export messages to file with progress |
+| search  | ✅ Complete | Search messages by text (single/all chats) |
 
 ## Code Quality
 
@@ -134,7 +146,14 @@ Implementation based on grammers-client v0.8.1 examples:
 
 1. ✅ ~~Implement `get` command using `client.iter_messages(peer)`~~ - DONE
 2. ✅ ~~Implement `watch` command using client updates stream~~ - DONE
-3. Implement `export` and `search` commands
-4. Add additional message filtering capabilities (message type)
-5. Write integration tests with real Telegram connection
-6. Add comprehensive error messages
+3. ✅ ~~Implement `export` and `search` commands~~ - DONE
+
+**All core commands are now complete!**
+
+Future enhancements:
+1. Add additional message filtering capabilities (message type)
+2. Write integration tests with real Telegram connection
+3. Add comprehensive error messages
+4. Optimize search performance for large message volumes
+5. Add batch export for multiple chats
+6. Add regex support for search

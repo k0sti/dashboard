@@ -120,11 +120,11 @@ pub enum TelegramCommand {
 
     /// Search messages by text content
     Search {
-        /// Chat name or ID (omit for --all)
-        chat: Option<String>,
-
         /// Search term
         term: String,
+
+        /// Chat name or ID (omit for --all)
+        chat: Option<String>,
 
         /// Search all chats
         #[arg(long)]
@@ -221,8 +221,8 @@ pub async fn execute(command: TelegramCommand) -> Result<()> {
         } => export::execute(chat, format, output, since, before, limit).await,
 
         TelegramCommand::Search {
-            chat,
             term,
+            chat,
             all,
             ignore_case,
             format,
