@@ -164,7 +164,7 @@ pub enum TelegramCommand {
 }
 
 #[derive(Subcommand)]
-enum ConfigAction {
+pub enum ConfigAction {
     /// Set a configuration value
     Set {
         /// Configuration key

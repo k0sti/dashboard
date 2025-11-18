@@ -28,16 +28,63 @@ pub async fn execute() -> Result<()> {
     println!();
     println!("  {}: {:?}", "Session File", session_file);
 
-    if session_file.exists() {
-        println!("  {}: {}", "Session Status".bold(), "Found".green());
-        println!();
-        println!("  {}", "Note:".yellow().bold());
-        println!("  The Telegram client is not yet fully implemented.");
-        println!("  Session validation requires the grammers-client library.");
-    } else {
+    if !session_file.exists() {
         println!("  {}: {}", "Session Status".bold(), "Not found".yellow());
         println!();
         println!("  Run {} to authenticate", "chat telegram init".cyan());
+        return Ok(());
+    }
+
+    println!("  {}: {}", "Session Status".bold(), "Found".green());
+
+    // Try to connect and check authorization
+    #[cfg(feature = "telegram")]
+    {
+        use super::client;
+
+        println!();
+        println!("  {}", "Checking connection...".dimmed());
+
+        match client::create_client().await {
+            Ok((client, runner_handle)) => {
+                println!("  {}: {}", "Connection".bold(), "Authorized".green());
+
+                // Get user info
+                match client.get_me().await {
+                    Ok(me) => {
+                        println!();
+                        println!("  {}", "Account Information:".bold());
+                        println!("    {}: {}", "Name", me.first_name().unwrap_or("Unknown"));
+                        if let Some(last_name) = me.last_name() {
+                            println!("    {}: {}", "Last Name", last_name);
+                        }
+                        if let Some(username) = me.username() {
+                            println!("    {}: @{}", "Username", username);
+                        }
+                        println!("    {}: {}", "User ID", me.raw.id());
+                    }
+                    Err(e) => {
+                        println!("  {}: Failed to get user info: {}", "Warning".yellow(), e);
+                    }
+                }
+
+                runner_handle.abort();
+            }
+            Err(e) => {
+                println!("  {}: {}", "Connection".bold(), "Failed".red());
+                println!("  {}: {}", "Error".red(), e);
+                println!();
+                println!("  Run {} to re-authenticate", "chat telegram init".cyan());
+            }
+        }
+    }
+
+    #[cfg(not(feature = "telegram"))]
+    {
+        println!();
+        println!("  {}", "Note:".yellow().bold());
+        println!("  The telegram feature is not enabled.");
+        println!("  Build with: cargo build --features telegram");
     }
 
     Ok(())

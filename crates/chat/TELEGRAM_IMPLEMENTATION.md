@@ -11,37 +11,40 @@
 
 ### Client Helper Module
 - Reusable client connection helper (`client.rs`)
-- Creates authenticated Telegram client
+- Provides create_client() for authenticated connections
 - Handles session loading and authorization check
 
-### List Command (Simplified)
+### List Command
 - Lists all chats/dialogs
-- Basic implementation using `dialog.peer()` API
+- Uses `dialog.peer()` API for fetching chats
 - Returns chat names and IDs
-- Note: Type filtering not yet implemented
+- Multiple output formats (text, JSON, CSV, compact)
 
-## In Progress 🔄
+### Status Command
+- Shows configuration status (API ID, phone)
+- Checks session file existence
+- Connects to Telegram and verifies authorization
+- Displays user account information (name, username, user ID)
+
+### Info Command
+- Find chat by name or ID (partial match supported)
+- Display chat information
+- JSON and text output formats
+
+### Config & Logout Commands
+- Configuration management (get/set/list)
+- Session deletion (logout)
+
+## Not Yet Implemented ❌
 
 ### Get Command
 - Fetch messages from specific chat
 - Time-based filtering (since, before)
 - Sender filtering
-- **Needs API corrections** for grammers v0.8
-
-### Info Command
-- Get detailed chat information
-- **Needs API corrections** for grammers v0.8
+- Message content type detection
 
 ### Watch Command
-- Real-time message monitoring
-- **Needs updates API implementation**
-
-### Status Command
-- Connection check
-- User information display
-- **Partially implemented**
-
-## Not Yet Implemented ❌
+- Real-time message monitoring using updates API
 
 ### Export Command
 - Export messages to file
@@ -53,44 +56,65 @@
 
 ## Technical Notes
 
-### grammers v0.8 API Differences
+### grammers v0.8 API Patterns
 
-The grammers v0.8 API differs significantly from anticipated patterns:
+**Dialogs (Chats):**
+- Use `client.iter_dialogs()` to get dialog iterator
+- Access peer with `dialog.peer()`
+- Get name with `peer.name()` → `Option<&str>`
+- Get ID with `peer.id().bot_api_dialog_id()` → `i64`
 
-- Use `dialog.peer()` instead of `dialog.chat()`
-- Use `peer.name()` for chat names (returns `Option<&str>`)
-- Use `peer.id().bot_api_dialog_id()` for IDs
-- `message.text()` returns `&str` (not `Option<&str>`)
-- `message.peer()` returns `Option<Peer>`
-- Dates are returned as Unix timestamps (i64)
+**Users:**
+- Use `client.get_me()` to get current user
+- Access name with `user.first_name()` → `Option<&str>`
+- Access username with `user.username()` → `Option<&str>`
+- Access ID with `user.raw.id()` → `i64`
+
+**Session:**
+- Use `SqliteSession::open(path)` to load/create session
+- Wrap in `Arc` for shared ownership
+- Pass to `SenderPool::new(session, api_id)`
+
+**Client Creation:**
+- Create `SenderPool` with session and API ID
+- Create `Client::new(&pool)`
+- Spawn network runner: `tokio::spawn(runner.run())`
+- Check authorization: `client.is_authorized()`
 
 ### Key Examples Referenced
 
-Implementation based on grammers-client examples:
+Implementation based on grammers-client v0.8.1 examples:
 - `examples/dialogs.rs` - Dialog listing
 - `examples/echo.rs` - Message updates and handling
 - `examples/downloader.rs` - Authentication flow
 
-## Next Steps
-
-1. Fix API calls in get, info, watch, and status commands
-2. Implement proper peer type discrimination
-3. Add message content type detection
-4. Implement export and search commands
-5. Add comprehensive error handling
-6. Write integration tests
-
 ## Commands Summary
 
-| Command | Status | Notes |
-|---------|--------|-------|
-| init    | ✅ Complete | Full auth flow with 2FA |
-| status  | 🔄 Partial | Needs API fixes |
-| list    | ✅ Basic | Works, type filter pending |
-| get     | 🔄 WIP | Needs API corrections |
-| watch   | 🔄 WIP | Needs updates API |
-| info    | 🔄 WIP | Needs API corrections |
-| export  | ❌ Not started | - |
-| search  | ❌ Not started | - |
-| config  | ✅ Complete | Config management works |
-| logout  | ✅ Complete | Session deletion works |
+| Command | Status | Functionality |
+|---------|--------|--------------|
+| init    | ✅ Complete | Full auth with 2FA, session management |
+| status  | ✅ Complete | Connection check, user info display |
+| list    | ✅ Complete | List all chats with formatting |
+| info    | ✅ Complete | Show chat details by name/ID |
+| config  | ✅ Complete | Config get/set/list |
+| logout  | ✅ Complete | Session deletion |
+| get     | ❌ Not started | Fetch messages from chat |
+| watch   | ❌ Not started | Real-time message monitoring |
+| export  | ❌ Not started | Export messages to file |
+| search  | ❌ Not started | Search messages by text |
+
+## Code Quality
+
+✅ Compiles successfully with `cargo build --features telegram`
+✅ Main warnings cleaned up (unused imports, variables)
+✅ Proper error handling with anyhow
+✅ Colored terminal output for better UX
+
+## Next Steps
+
+1. Implement `get` command using `client.iter_messages(peer)`
+2. Implement `watch` command using client updates stream
+3. Implement `export` and `search` commands
+4. Add message filtering capabilities
+5. Write integration tests with real Telegram connection
+6. Add comprehensive error messages

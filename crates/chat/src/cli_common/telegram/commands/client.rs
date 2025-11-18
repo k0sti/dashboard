@@ -52,6 +52,7 @@ pub async fn create_client() -> Result<(Client, JoinHandle<()>)> {
 
 /// Create a client without checking authorization (for logout, etc.)
 #[cfg(feature = "telegram")]
+#[allow(dead_code)]
 pub async fn create_client_unchecked() -> Result<(Client, JoinHandle<()>)> {
     let config = Config::load()?;
 

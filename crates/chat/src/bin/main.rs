@@ -13,8 +13,6 @@ mod telegram;
 #[path = "../types.rs"]
 mod types;
 
-use cli::*;
-
 #[derive(Parser)]
 #[command(name = "chat")]
 #[command(about = "Unified CLI for reading messages from Telegram, WhatsApp, and Signal", long_about = None)]
@@ -80,13 +78,13 @@ async fn main() -> Result<()> {
 
     match cli.platform {
         Platform::Telegram { command } => telegram::execute(command).await,
-        Platform::Whatsapp { command } => {
+        Platform::Whatsapp { command: _ } => {
             use colored::Colorize;
             println!("{}", "WhatsApp CLI is not yet implemented.".yellow());
             println!("See the OpenSpec proposal: openspec/changes/add-whatsapp-cli/");
             Ok(())
         }
-        Platform::Signal { command } => {
+        Platform::Signal { command: _ } => {
             use colored::Colorize;
             println!("{}", "Signal CLI is not yet implemented.".yellow());
             println!("See the OpenSpec proposal: openspec/changes/add-signal-cli/");
