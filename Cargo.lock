@@ -120,6 +120,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "chat",
  "chrono",
  "dirs",
  "eframe",
@@ -771,6 +772,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ced0551234e87afee12411d535648dd89d2e7f34c78b753395567aff3d447ff"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "chat"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "tokio",
+ "uuid",
 ]
 
 [[package]]
