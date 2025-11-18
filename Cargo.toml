@@ -1,3 +1,6 @@
+[workspace]
+members = [".", "crates/chat"]
+
 [package]
 name = "agent-dashboard"
 version = "0.1.0"
