@@ -170,10 +170,17 @@ fn convert_message(
         let sender_name = sender_peer.name().unwrap_or("Unknown");
         let sender_id = sender_peer.id().bot_api_dialog_id();
 
+        // For outgoing messages, use "User" as display name
+        let display_name = if msg.outgoing() {
+            "User".to_string()
+        } else {
+            sender_name.to_string()
+        };
+
         User {
             id: UserId::new(&sender_id.to_string()),
             username: None,
-            display_name: Some(sender_name.to_string()),
+            display_name: Some(display_name),
             phone_number: None,
         }
     } else {
