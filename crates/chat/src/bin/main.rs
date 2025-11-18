@@ -10,6 +10,8 @@ mod config;
 mod formatters;
 #[path = "../cli_common/telegram/mod.rs"]
 mod telegram;
+#[path = "../types.rs"]
+mod types;
 
 use cli::*;
 

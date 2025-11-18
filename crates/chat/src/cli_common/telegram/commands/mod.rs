@@ -1,3 +1,4 @@
+pub mod client;
 pub mod config_cmd;
 pub mod export;
 pub mod get;
