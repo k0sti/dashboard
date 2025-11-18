@@ -166,7 +166,7 @@ fn convert_message(
     let timestamp = msg.date();
 
     // Get sender info
-    let sender = if let Ok(sender_peer) = msg.peer() {
+    let sender = if let Some(sender_peer) = msg.sender() {
         let sender_name = sender_peer.name().unwrap_or("Unknown");
         let sender_id = sender_peer.id().bot_api_dialog_id();
 

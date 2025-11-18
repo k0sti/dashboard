@@ -126,8 +126,12 @@ pub async fn execute(chat: Option<String>, all: bool, format: OutputFormat) -> R
                             }
 
                             // Get sender info
-                            let sender_name = if let Ok(peer) = message.peer() {
-                                peer.name().unwrap_or("Unknown").to_string()
+                            let sender_name = if let Some(peer) = message.sender() {
+                                if message.outgoing() {
+                                    "User".to_string()
+                                } else {
+                                    peer.name().unwrap_or("Unknown").to_string()
+                                }
                             } else {
                                 "Unknown".to_string()
                             };
