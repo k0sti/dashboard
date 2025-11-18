@@ -32,8 +32,9 @@ toml = "0.8"
 # matrix-sdk = { version = "0.14", optional = true }
 grammers-client = { version = "0.8", optional = true }
 grammers-session = { version = "0.8", optional = true }
+grammers-mtsender = { version = "0.8", optional = true }
 
 [features]
 default = ["telegram"]
 matrix = []  # matrix-sdk
-telegram = ["grammers-client", "grammers-session"]
+telegram = ["grammers-client", "grammers-session", "grammers-mtsender"]

@@ -49,27 +49,118 @@ pub async fn execute(
 }
 
 #[cfg(feature = "telegram")]
-async fn telegram_auth(_api_id: i32, _api_hash: &str, _phone: &str) -> Result<()> {
-    use colored::Colorize;
+async fn telegram_auth(api_id: i32, api_hash: &str, phone: &str) -> Result<()> {
+    use std::io::{self, Write};
+    use std::sync::Arc;
+    use grammers_client::{Client, SignInError};
+    use grammers_mtsender::SenderPool;
+    use grammers_session::storages::SqliteSession;
 
-    println!("\n{}", "Note:".yellow().bold());
-    println!("  Telegram client integration is ready but not yet implemented.");
-    println!("  The grammers-client v0.8 API requires:");
-    println!();
-    println!("  1. Create a SenderPool");
-    println!("  2. Use SqliteSession::load_file_or_create() for session storage");
-    println!("  3. Create Client with Client::new(sender_pool)");
-    println!("  4. Implement authentication flow with:");
-    println!("     - client.is_authorized()");
-    println!("     - client.request_login_code()");
-    println!("     - client.sign_in()");
-    println!();
-    println!("{}", "Resources:".bold());
-    println!("  - grammers examples: https://github.com/Lonami/grammers/tree/master/examples");
-    println!("  - API docs: https://docs.rs/grammers-client/0.8.1/");
-    println!();
-    println!("{}", "Session file location:".bold());
-    println!("  {}", Config::session_file()?.display());
+    println!("{}", "Connecting to Telegram...".bold());
+
+    // Get session file path
+    let session_path = Config::session_file()?;
+    let session_path_str = session_path.to_str().context("Invalid session path")?;
+
+    // Load or create session
+    let session = Arc::new(SqliteSession::open(session_path_str)?);
+
+    // Create sender pool and client
+    println!("{}", "Initializing Telegram client...".bold());
+    let pool = SenderPool::new(Arc::clone(&session), api_id);
+    let client = Client::new(&pool);
+
+    // Start the network runner
+    let SenderPool { runner, .. } = pool;
+    let runner_handle = tokio::spawn(runner.run());
+
+    // Check if already signed in
+    if client.is_authorized().await? {
+        println!("{}", "✓ Already signed in!".green().bold());
+        println!("  Session: {}", session_path.display());
+
+        // Get user info
+        match client.get_me().await {
+            Ok(me) => {
+                println!("  User: {}", me.first_name().unwrap_or("Unknown"));
+                if let Some(username) = me.username() {
+                    println!("  Username: @{}", username);
+                }
+            }
+            Err(e) => {
+                println!("  {}: {}", "Warning".yellow(), e);
+            }
+        }
+
+        runner_handle.abort();
+        return Ok(());
+    }
+
+    println!("{}", "Requesting authentication code...".bold());
+
+    // Request login code
+    let token = client
+        .request_login_code(phone, api_hash)
+        .await
+        .context("Failed to request login code")?;
+
+    // Prompt for auth code
+    print!("Enter the code you received: ");
+    io::stdout().flush()?;
+    let mut code = String::new();
+    io::stdin().read_line(&mut code)?;
+    let code = code.trim();
+
+    println!("{}", "Signing in...".bold());
+
+    // Sign in
+    match client.sign_in(&token, code).await {
+        Ok(_) => {
+            println!("{}", "✓ Successfully signed in!".green().bold());
+            println!("  Session saved to: {}", session_path.display());
+
+            // Get user info
+            match client.get_me().await {
+                Ok(me) => {
+                    println!("  User: {}", me.first_name().unwrap_or("Unknown"));
+                    if let Some(username) = me.username() {
+                        println!("  Username: @{}", username);
+                    }
+                }
+                Err(e) => {
+                    println!("  {}: {}", "Warning".yellow(), e);
+                }
+            }
+        }
+        Err(SignInError::PasswordRequired(password_token)) => {
+            // 2FA is enabled
+            print!("Two-factor authentication enabled.");
+            if let Some(hint) = password_token.hint() {
+                print!(" Hint: {}", hint);
+            }
+            println!();
+            print!("Enter your password: ");
+            io::stdout().flush()?;
+            let mut password = String::new();
+            io::stdin().read_line(&mut password)?;
+            let password = password.trim();
+
+            client
+                .check_password(password_token, password)
+                .await
+                .context("Failed to sign in with password")?;
+
+            println!("{}", "✓ Successfully signed in!".green().bold());
+            println!("  Session saved to: {}", session_path.display());
+        }
+        Err(e) => {
+            runner_handle.abort();
+            return Err(anyhow::anyhow!("Failed to sign in: {}", e));
+        }
+    }
+
+    // Stop the runner
+    runner_handle.abort();
 
     Ok(())
 }
