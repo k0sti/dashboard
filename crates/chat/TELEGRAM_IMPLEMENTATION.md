@@ -44,10 +44,17 @@
 - File output support
 - Proper message conversion with sender info, timestamps, replies
 
-## Not Yet Implemented ❌
-
 ### Watch Command
-- Real-time message monitoring using updates API
+- Real-time message monitoring using `client.stream_updates()`
+- Watch specific chat by name or ID
+- Watch all chats with --all flag
+- UpdatesConfiguration with catch_up: false for real-time only
+- Filters outgoing messages (only shows incoming)
+- Graceful Ctrl+C handling with update state sync
+- Text and JSON output formats
+- Shows sender name, timestamp, and message text
+
+## Not Yet Implemented ❌
 
 ### Export Command
 - Export messages to file
@@ -84,6 +91,16 @@
 - Spawn network runner: `tokio::spawn(runner.run())`
 - Check authorization: `client.is_authorized()`
 
+**Updates Stream:**
+- Extract `updates` from `SenderPool` destructuring
+- Create stream: `client.stream_updates(updates, UpdatesConfiguration {...})`
+- Use `UpdatesConfiguration { catch_up: false, .. }` for real-time only
+- Loop with `updates.next().await` to get `Update` enum
+- Match on `Update::NewMessage(message)` for new messages
+- Filter with `!message.outgoing()` to exclude own messages
+- Use `tokio::select!` for Ctrl+C handling
+- Call `updates.sync_update_state()` before exit
+
 ### Key Examples Referenced
 
 Implementation based on grammers-client v0.8.1 examples:
@@ -102,7 +119,7 @@ Implementation based on grammers-client v0.8.1 examples:
 | config  | ✅ Complete | Config get/set/list |
 | logout  | ✅ Complete | Session deletion |
 | get     | ✅ Complete | Fetch messages with time/sender filters |
-| watch   | ❌ Not started | Real-time message monitoring |
+| watch   | ✅ Complete | Real-time message monitoring with Ctrl+C |
 | export  | ❌ Not started | Export messages to file |
 | search  | ❌ Not started | Search messages by text |
 
@@ -116,7 +133,7 @@ Implementation based on grammers-client v0.8.1 examples:
 ## Next Steps
 
 1. ✅ ~~Implement `get` command using `client.iter_messages(peer)`~~ - DONE
-2. Implement `watch` command using client updates stream
+2. ✅ ~~Implement `watch` command using client updates stream~~ - DONE
 3. Implement `export` and `search` commands
 4. Add additional message filtering capabilities (message type)
 5. Write integration tests with real Telegram connection
