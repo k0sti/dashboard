@@ -32,14 +32,44 @@ pub async fn execute(
     config.save()?;
 
     println!("{}", "Configuration saved.".green());
+
+    #[cfg(feature = "telegram")]
+    {
+        telegram_auth(api_id, &api_hash, &phone).await?;
+    }
+
+    #[cfg(not(feature = "telegram"))]
+    {
+        println!("\n{}", "Note:".yellow().bold());
+        println!("  The telegram feature is not enabled.");
+        println!("  Build with: cargo build --features telegram");
+    }
+
+    Ok(())
+}
+
+#[cfg(feature = "telegram")]
+async fn telegram_auth(_api_id: i32, _api_hash: &str, _phone: &str) -> Result<()> {
+    use colored::Colorize;
+
     println!("\n{}", "Note:".yellow().bold());
-    println!("  The Telegram client implementation is not yet complete.");
-    println!("  To complete the implementation, add the grammers-client dependency");
-    println!("  and implement the authentication flow in this file.");
-    println!("\n{}", "Next steps:".bold());
-    println!("  1. Add grammers dependencies to Cargo.toml");
-    println!("  2. Implement phone authentication with code verification");
-    println!("  3. Save session data to {:?}", Config::session_file()?);
+    println!("  Telegram client integration is ready but not yet implemented.");
+    println!("  The grammers-client v0.8 API requires:");
+    println!();
+    println!("  1. Create a SenderPool");
+    println!("  2. Use SqliteSession::load_file_or_create() for session storage");
+    println!("  3. Create Client with Client::new(sender_pool)");
+    println!("  4. Implement authentication flow with:");
+    println!("     - client.is_authorized()");
+    println!("     - client.request_login_code()");
+    println!("     - client.sign_in()");
+    println!();
+    println!("{}", "Resources:".bold());
+    println!("  - grammers examples: https://github.com/Lonami/grammers/tree/master/examples");
+    println!("  - API docs: https://docs.rs/grammers-client/0.8.1/");
+    println!();
+    println!("{}", "Session file location:".bold());
+    println!("  {}", Config::session_file()?.display());
 
     Ok(())
 }

@@ -1,3 +1,5 @@
+[workspace]
+
 [package]
 name = "chat"
 version = "0.1.0"
@@ -28,10 +30,10 @@ toml = "0.8"
 # Optional dependencies for actual implementations
 # Uncomment when ready to implement
 # matrix-sdk = { version = "0.14", optional = true }
-# grammers-client = { version = "0.6", optional = true }
-# grammers-session = { version = "0.6", optional = true }
+grammers-client = { version = "0.8", optional = true }
+grammers-session = { version = "0.8", optional = true }
 
 [features]
-default = []
+default = ["telegram"]
 matrix = []  # matrix-sdk
-telegram = []  # grammers-client, grammers-session
+telegram = ["grammers-client", "grammers-session"]
