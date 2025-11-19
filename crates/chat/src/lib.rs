@@ -1,3 +1,4 @@
+pub mod filter_parser;
 pub mod matrix_client;
 pub mod sources_manager;
 pub mod telegram_client;
