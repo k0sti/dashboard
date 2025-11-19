@@ -34,7 +34,11 @@ grammers-client = { version = "0.8", optional = true }
 grammers-session = { version = "0.8", optional = true }
 grammers-mtsender = { version = "0.8", optional = true }
 
+# MCP server dependencies
+rust-mcp-sdk = { version = "0.7", optional = true }
+
 [features]
 default = ["telegram"]
 matrix = []  # matrix-sdk
 telegram = ["grammers-client", "grammers-session", "grammers-mtsender"]
+mcp = ["rust-mcp-sdk"]
