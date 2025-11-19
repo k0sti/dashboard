@@ -52,7 +52,7 @@ fn parse_chat_pattern(pattern: &str) -> Result<ChatPattern> {
     }
 }
 
-/// Parse a time specification into DateTime<Utc>
+/// Parse a time specification into `DateTime<Utc>`
 /// Supports:
 /// - Relative: "7d", "2h", "30m", "60s"
 /// - Absolute: "2025-01-15", "2025-01-15T14:30:00Z"

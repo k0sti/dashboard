@@ -42,6 +42,13 @@ grammers-mtsender = { version = "0.8", optional = true }
 # MCP server dependencies
 rust-mcp-sdk = { version = "0.7", optional = true }
 
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports", "async_tokio"] }
+
+[[bench]]
+name = "message_filtering"
+harness = false
+
 [features]
 default = ["telegram"]
 matrix = []  # matrix-sdk
