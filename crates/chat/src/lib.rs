@@ -1,5 +1,7 @@
 pub mod filter_parser;
 pub mod matrix_client;
+#[cfg(feature = "mcp")]
+pub mod mcp_server;
 pub mod sources_manager;
 pub mod telegram_client;
 pub mod telegram_source;

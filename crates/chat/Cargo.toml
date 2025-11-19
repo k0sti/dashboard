@@ -9,6 +9,11 @@ edition = "2021"
 name = "chat"
 path = "src/bin/main.rs"
 
+[[bin]]
+name = "chat-mcp-server"
+path = "src/bin/chat-mcp-server.rs"
+required-features = ["mcp"]
+
 [dependencies]
 anyhow = "1"
 async-trait = "0.1"
