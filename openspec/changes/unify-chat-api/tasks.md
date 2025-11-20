@@ -36,10 +36,10 @@
 - [ ] Create placeholder tests
 
 ### 1.5 Create WhatsApp ChatSource Implementation
-- [ ] Create WhatsAppSource struct (stubbed initially)
-- [ ] Implement ChatSource trait for WhatsAppSource
-- [ ] Add note about WhatsApp implementation being future work
-- [ ] Create placeholder tests
+- [x] Create WhatsAppSource struct (stubbed initially)
+- [x] Implement ChatSource trait for WhatsAppSource
+- [x] Add note about WhatsApp implementation being future work
+- [x] Create placeholder tests
 
 ### 1.6 Maintain Backward Compatibility
 - [ ] Keep existing ChatClient trait unchanged
@@ -252,3 +252,51 @@
 - [ ] Performance benchmarks meet targets
 - [ ] Documentation complete and reviewed
 - [ ] Migration guide tested with real code
+
+---
+
+## Implementation Status Update (2025-01-20)
+
+### WhatsApp Vertical Slice - Dependencies Resolved! ✅
+
+**Major milestone achieved:** Successfully resolved the SQLite dependency conflict that was blocking single binary support for both Telegram and WhatsApp.
+
+**What was completed:**
+1. ✅ **SQLite Conflict Resolution**
+   - Patched `grammers-session` to make SQLite optional
+   - Used Cargo's `[patch.crates-io]` mechanism
+   - Telegram now uses MemorySession (no SQLite)
+   - WhatsApp uses Diesel/SQLite with no conflicts
+   - See `SINGLE_BINARY_SUCCESS.md` for technical details
+
+2. ✅ **Build System Configuration**
+   - Created `flake.nix` for NixOS development environment
+   - Added `rust-toolchain.toml` for nightly Rust (required by whatsapp-rust)
+   - Single binary builds successfully with both features
+   - Verified: `nix develop -c cargo check --features telegram,whatsapp` ✅
+
+3. ✅ **WhatsApp ChatSource Scaffold** (Phase 1.5 complete)
+   - WhatsAppSource struct created in `src/whatsapp_source.rs`
+   - ChatSource trait implemented with TODO placeholders
+   - Placeholder tests added
+   - Documentation in `WHATSAPP_VERTICAL_SLICE_STATUS.md`
+
+**Current state:**
+- Build system: ✅ Working
+- Dependencies: ✅ Resolved
+- Scaffold: ✅ Complete
+- Implementation: ⏸️ 4 TODO functions remaining (5-7 hours estimated)
+
+**Next steps for WhatsApp:**
+1. Implement `authenticate_with_qr()` - QR code authentication flow
+2. Implement `find_group_by_name()` - Group search functionality
+3. Implement message fetching logic in `get_messages()`
+4. Implement `convert_message()` - WhatsApp to unified message mapping
+
+**Files created/modified:**
+- `patches/grammers-session/` - Patched dependency
+- `flake.nix` - Nix development environment
+- `rust-toolchain.toml` - Nightly Rust specification
+- `src/whatsapp_source.rs` - WhatsApp ChatSource implementation
+- `SINGLE_BINARY_SUCCESS.md` - Technical documentation
+- `WHATSAPP_VERTICAL_SLICE_STATUS.md` - Updated status
