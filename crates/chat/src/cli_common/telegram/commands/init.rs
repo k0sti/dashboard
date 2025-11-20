@@ -54,16 +54,13 @@ async fn telegram_auth(api_id: i32, api_hash: &str, phone: &str) -> Result<()> {
     use std::sync::Arc;
     use grammers_client::{Client, SignInError};
     use grammers_mtsender::SenderPool;
-    use grammers_session::storages::SqliteSession;
+    use grammers_session::storages::MemorySession;
 
     println!("{}", "Connecting to Telegram...".bold());
 
-    // Get session file path
-    let session_path = Config::session_file()?;
-    let session_path_str = session_path.to_str().context("Invalid session path")?;
-
-    // Load or create session
-    let session = Arc::new(SqliteSession::open(session_path_str)?);
+    // Note: Using MemorySession (session won't persist across restarts)
+    // This avoids SQLite conflicts with WhatsApp storage
+    let session = Arc::new(MemorySession::default());
 
     // Create sender pool and client
     println!("{}", "Initializing Telegram client...".bold());
@@ -74,10 +71,9 @@ async fn telegram_auth(api_id: i32, api_hash: &str, phone: &str) -> Result<()> {
     let SenderPool { runner, .. } = pool;
     let runner_handle = tokio::spawn(runner.run());
 
-    // Check if already signed in
+    // Check if already signed in (unlikely with MemorySession, but check anyway)
     if client.is_authorized().await? {
         println!("{}", "✓ Already signed in!".green().bold());
-        println!("  Session: {}", session_path.display());
 
         // Get user info
         match client.get_me().await {
@@ -117,7 +113,7 @@ async fn telegram_auth(api_id: i32, api_hash: &str, phone: &str) -> Result<()> {
     match client.sign_in(&token, code).await {
         Ok(_) => {
             println!("{}", "✓ Successfully signed in!".green().bold());
-            println!("  Session saved to: {}", session_path.display());
+            println!("  Note: Session uses in-memory storage (won't persist across restarts)");
 
             // Get user info
             match client.get_me().await {
@@ -151,7 +147,7 @@ async fn telegram_auth(api_id: i32, api_hash: &str, phone: &str) -> Result<()> {
                 .context("Failed to sign in with password")?;
 
             println!("{}", "✓ Successfully signed in!".green().bold());
-            println!("  Session saved to: {}", session_path.display());
+            println!("  Note: Session uses in-memory storage (won't persist across restarts)");
         }
         Err(e) => {
             runner_handle.abort();

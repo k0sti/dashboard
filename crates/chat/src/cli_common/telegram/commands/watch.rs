@@ -19,7 +19,7 @@ pub async fn execute(chat: Option<String>, all: bool, format: OutputFormat) -> R
     {
         use grammers_client::{Update, UpdatesConfiguration};
         use grammers_mtsender::SenderPool;
-        use grammers_session::storages::SqliteSession;
+        use grammers_session::storages::MemorySession;
         use std::sync::Arc;
 
         use crate::config::Config;
@@ -30,19 +30,9 @@ pub async fn execute(chat: Option<String>, all: bool, format: OutputFormat) -> R
             .api_id
             .context("API ID not configured. Run 'chat telegram init'")?;
 
-        // Get session file path
-        let session_path = Config::session_file()?;
-        let session_path_str = session_path
-            .to_str()
-            .context("Invalid session path")?;
-
-        // Check if session file exists
-        if !session_path.exists() {
-            anyhow::bail!("Session not found. Run 'chat telegram init' to authenticate");
-        }
-
-        // Load session
-        let session = Arc::new(SqliteSession::open(session_path_str)?);
+        // Note: Using MemorySession (session won't persist across restarts)
+        // This avoids SQLite conflicts with WhatsApp storage
+        let session = Arc::new(MemorySession::default());
 
         // Create sender pool and client
         let pool = SenderPool::new(Arc::clone(&session), api_id);

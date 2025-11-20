@@ -9,7 +9,7 @@ pub use grammers_client::Client;
 #[cfg(feature = "telegram")]
 use grammers_mtsender::SenderPool;
 #[cfg(feature = "telegram")]
-use grammers_session::storages::SqliteSession;
+use grammers_session::storages::MemorySession;
 
 /// Create a Telegram client with the stored session
 #[cfg(feature = "telegram")]
@@ -20,19 +20,9 @@ pub async fn create_client() -> Result<(Client, JoinHandle<()>)> {
         .api_id
         .context("API ID not configured. Run 'chat telegram init'")?;
 
-    // Get session file path
-    let session_path = Config::session_file()?;
-    let session_path_str = session_path
-        .to_str()
-        .context("Invalid session path")?;
-
-    // Check if session file exists
-    if !session_path.exists() {
-        anyhow::bail!("Session not found. Run 'chat telegram init' to authenticate");
-    }
-
-    // Load session
-    let session = Arc::new(SqliteSession::open(session_path_str)?);
+    // Note: Using MemorySession (session won't persist across restarts)
+    // This avoids SQLite conflicts with WhatsApp storage
+    let session = Arc::new(MemorySession::default());
 
     // Create sender pool and client
     let pool = SenderPool::new(Arc::clone(&session), api_id);
@@ -60,19 +50,9 @@ pub async fn create_client_unchecked() -> Result<(Client, JoinHandle<()>)> {
         .api_id
         .context("API ID not configured. Run 'chat telegram init'")?;
 
-    // Get session file path
-    let session_path = Config::session_file()?;
-    let session_path_str = session_path
-        .to_str()
-        .context("Invalid session path")?;
-
-    // Check if session file exists
-    if !session_path.exists() {
-        anyhow::bail!("Session not found");
-    }
-
-    // Load session
-    let session = Arc::new(SqliteSession::open(session_path_str)?);
+    // Note: Using MemorySession (session won't persist across restarts)
+    // This avoids SQLite conflicts with WhatsApp storage
+    let session = Arc::new(MemorySession::default());
 
     // Create sender pool and client
     let pool = SenderPool::new(Arc::clone(&session), api_id);

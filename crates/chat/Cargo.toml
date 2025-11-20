@@ -1,4 +1,10 @@
 [workspace]
+exclude = ["whatsapp-rust"]
+
+# Patch grammers-session to make SQLite optional
+# This allows both Telegram and WhatsApp in the same binary
+[patch.crates-io]
+grammers-session = { path = "./patches/grammers-session" }
 
 [package]
 name = "chat"
@@ -8,6 +14,7 @@ edition = "2021"
 [[bin]]
 name = "chat"
 path = "src/bin/main.rs"
+# Both Telegram and WhatsApp now supported in single binary!
 
 [[bin]]
 name = "chat-mcp-server"
@@ -35,9 +42,16 @@ toml = "0.8"
 # Optional dependencies for actual implementations
 # Uncomment when ready to implement
 # matrix-sdk = { version = "0.14", optional = true }
+
+# Telegram (using patched grammers-session without SQLite)
 grammers-client = { version = "0.8", optional = true }
-grammers-session = { version = "0.8", optional = true }
+grammers-session = { version = "0.8", optional = true, default-features = false }
 grammers-mtsender = { version = "0.8", optional = true }
+
+# WhatsApp client (unofficial - may violate ToS)
+# Now enabled thanks to patched grammers-session
+whatsapp-rust = { path = "./whatsapp-rust", optional = true }
+qr2term = { version = "0.3", optional = true }  # For QR code display
 
 # MCP server dependencies
 rust-mcp-sdk = { version = "0.7", optional = true }
@@ -50,7 +64,8 @@ name = "message_filtering"
 harness = false
 
 [features]
-default = ["telegram"]
+default = ["telegram", "whatsapp"]
 matrix = []  # matrix-sdk
 telegram = ["grammers-client", "grammers-session", "grammers-mtsender"]
+whatsapp = ["whatsapp-rust", "qr2term"]
 mcp = ["rust-mcp-sdk"]

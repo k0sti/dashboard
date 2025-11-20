@@ -13,7 +13,7 @@ use grammers_client::Client;
 #[cfg(feature = "telegram")]
 use grammers_mtsender::SenderPool;
 #[cfg(feature = "telegram")]
-use grammers_session::storages::SqliteSession;
+use grammers_session::storages::MemorySession;
 #[cfg(feature = "telegram")]
 use std::path::PathBuf;
 #[cfg(feature = "telegram")]
@@ -43,17 +43,9 @@ impl TelegramSource {
     /// Connect to Telegram with the given API ID and session file path
     #[cfg(feature = "telegram")]
     pub async fn connect_with_session(&mut self, api_id: i32, session_path: PathBuf) -> Result<()> {
-        let session_path_str = session_path
-            .to_str()
-            .ok_or_else(|| anyhow::anyhow!("Invalid session path"))?;
-
-        // Check if session file exists
-        if !session_path.exists() {
-            anyhow::bail!("Session file not found: {}", session_path.display());
-        }
-
-        // Load session
-        let session = Arc::new(SqliteSession::open(session_path_str)?);
+        // Note: Using MemorySession (session won't persist across restarts)
+        // This avoids SQLite conflicts with WhatsApp storage
+        let session = Arc::new(MemorySession::default());
 
         // Create sender pool and client
         let pool = SenderPool::new(Arc::clone(&session), api_id);
