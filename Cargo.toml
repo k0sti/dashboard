@@ -24,6 +24,8 @@ rusqlite = { version = "0.32", features = ["bundled"] }
 log = "0.4"
 env_logger = "0.11"
 async-trait = "0.1"
+portable-pty = "0.8"
+vte = "0.13"
 
 # TTS dependencies (optional for now due to platform-specific audio dependencies)
 piper-rs = { version = "0.1", optional = true }  # Piper TTS ONNX models
